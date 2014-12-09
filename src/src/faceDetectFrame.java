@@ -81,7 +81,7 @@ public class faceDetectFrame extends JFrame{
         String[] str= {"1","2","3"};
         JLabel label_num_text = new JLabel("自拍人數");
 
-        faceDetector = new CascadeClassifier("D:/JAVA/out/production/JAVA/lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
+        faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
         label_image = new JLabel();
         btn_openFile = new JButton("開啟檔案");
         btn_openCam = new JButton("open Cam");
