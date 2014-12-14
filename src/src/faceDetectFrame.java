@@ -10,43 +10,171 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.util.Date;
 
 /**
- * Created by Pinetum on 2014/12/2.
+ * Created by pinetum Lin (s1010329) on 2014/12/2.
  */
 public class faceDetectFrame extends JFrame{
     //****************************//
 
     final int cameraNumber = 0 ;
+    final private String str_explan = "<html><body style=\"font-size:15px;padding-left:30px;\">1.請點選選單列" +
+            "<span style=\"color: #FF0000;\">Camera</span>中的<span style=\"color: #FF0000;\">peoples</span>設定拍照人數<br>" +
+            "2.再點選<span style=\"color: #FF0000;\">Start Capture</span>開始自動判斷人數拍照</body></html>";
+
+
 
     //****************************//
-    public static void main (String[] argc){
 
+    public static faceDetectFrame pointer;
+    private VideoCapture cam;
+    private Thread t_capture;
+    private JLabel label_image;
+    private JLabel label_explain;
+    private JPanel panel_ctrl;
+    private CascadeClassifier faceDetector;
+    private int n_targetFace=99;
+    private JMenuBar bar_main;
+    private JMenu menu_Camera;
+    private JMenu menu_Help;
+    private JMenu menu_numOfPeople;
+    private JMenuItem mu_item_about;
+    private JMenuItem mu_item_start;
+    private JMenuItem mu_item_stop;
+    private JRadioButtonMenuItem rad_btn_num_3;
+    private JRadioButtonMenuItem rad_btn_num_4;
+    private JRadioButtonMenuItem rad_btn_num_5;
+    private JRadioButtonMenuItem rad_btn_num_6;
+    private ButtonGroup rad_group;
+
+    //****************************//
+
+
+
+    //****************************//
+
+
+
+    public static void main (String[] argc){
         faceDetectFrame app = new faceDetectFrame();
         app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         app.setVisible(true);
+    }
 
+
+
+    public faceDetectFrame(){
+        super("face");
+        pointer = this;
+        inital();
+        addListener();
 
 
     }
+    private void inital(){
+        setSize(600, 400);
+        setLocationRelativeTo(null);
+        System.loadLibrary("opencv_java249x64");
+        String[] str= {"1","2","3"};
+        faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
+        label_image = new JLabel();
+        label_explain = new JLabel();
+        panel_ctrl = new JPanel();
+        bar_main = new JMenuBar();
+        menu_Camera = new JMenu("Camera...");
+        menu_Help = new JMenu("Help");
+        menu_numOfPeople = new JMenu("peoples");
+        mu_item_about = new JMenuItem("About");
+        mu_item_start = new JMenuItem("Start Capture");
+        mu_item_stop = new JMenuItem("Stop Capture");
+        rad_btn_num_3 = new JRadioButtonMenuItem("3");
+        rad_btn_num_4 = new JRadioButtonMenuItem("4");
+        rad_btn_num_5 = new JRadioButtonMenuItem("5");
+        rad_btn_num_6 = new JRadioButtonMenuItem("6");
 
-    private VideoCapture cam;
-    private boolean b_camIsOpen = false;
-    private Thread t_capture;
-    private JComboBox s_numOfPeople;
-    private JLabel label_image;
-    private JButton btn_openFile;
-    private JButton btn_openCam;
-    private JButton btn_reconiz;
-    private JFileChooser dlg_openFile;
-    private CascadeClassifier faceDetector;
-    private JPanel panel_ctrl;
-    private int n_targetFace=99;
+
+
+        rad_group = new ButtonGroup();
+        rad_group.add(rad_btn_num_3);
+        rad_group.add(rad_btn_num_4);
+        rad_group.add(rad_btn_num_5);
+        rad_group.add(rad_btn_num_6);
+
+        rad_btn_num_3.setSelected(true);
+
+        menu_numOfPeople.add(rad_btn_num_3);
+        menu_numOfPeople.add(rad_btn_num_4);
+        menu_numOfPeople.add(rad_btn_num_5);
+        menu_numOfPeople.add(rad_btn_num_6);
+
+
+        toogleCameraCtrMenuItem(false);
+
+
+        menu_Help.add(mu_item_about);
+        menu_Camera.add(mu_item_start);
+        menu_Camera.add(mu_item_stop);
+        menu_Camera.add(menu_numOfPeople);
+        bar_main.add(menu_Camera);
+        bar_main.add(menu_Help);
+
+
+
+        label_explain.setText(str_explan);
+        add(bar_main,BorderLayout.NORTH);
+        add(panel_ctrl, BorderLayout.EAST);
+        add(label_explain,BorderLayout.CENTER);
+        add(label_image, BorderLayout.SOUTH);
+
+    }
+    private void addListener(){
+        mu_item_start.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startCamera();
+            }
+        });
+        mu_item_stop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                stopCamera();
+            }
+        });
+        menu_numOfPeople.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.print(e.getID());
+            }
+        });
+
+        mu_item_about.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(pointer,"developer:Pinetum\nName:林冠廷\nStdID:1010329","About",JOptionPane.CLOSED_OPTION);
+            }
+        });
+        ActionListener actLten_rad_num_of_pepple = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JRadioButtonMenuItem mm = (JRadioButtonMenuItem)e.getSource();
+                n_targetFace = Integer.valueOf(mm.getText());
+            }
+        };
+
+        rad_btn_num_3.addActionListener(actLten_rad_num_of_pepple);
+        rad_btn_num_4.addActionListener(actLten_rad_num_of_pepple);
+        rad_btn_num_5.addActionListener(actLten_rad_num_of_pepple);
+        rad_btn_num_6.addActionListener(actLten_rad_num_of_pepple);
+
+
+    }
     public void findFace(Mat image){
-
+        Scalar color_rect = new Scalar(0, 255, 0);
         MatOfRect faceDetections = new MatOfRect();
         faceDetector.detectMultiScale(image, faceDetections);
         int faces = faceDetections.toArray().length;
@@ -54,7 +182,7 @@ public class faceDetectFrame extends JFrame{
         if(n_targetFace == faces){
             Date now = new Date();
             System.out.println(String.format("Detected %s faces", faces));
-
+            color_rect = new Scalar(0,0,255);
 
             try{
                 //Highgui.imwrite("IMG_"+now.toString(),image);
@@ -67,68 +195,13 @@ public class faceDetectFrame extends JFrame{
 
         if(faceDetections.toArray().length > 0){
             for (Rect rect : faceDetections.toArray()) {
-                Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+                Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), color_rect);
             }
         }
-        setSize(image.cols(), image.rows() + btn_openFile.getHeight());
+        setSize(image.cols(), image.rows() + bar_main.getHeight());
         ImageIcon icon = new ImageIcon(toBufferedImage(image));
         label_image.setIcon(icon);
     }
-    public faceDetectFrame(){
-        super("face");
-        setSize(400, 400);
-        System.loadLibrary("opencv_java249x64");
-        String[] str= {"1","2","3"};
-        JLabel label_num_text = new JLabel("自拍人數");
-
-        faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
-        label_image = new JLabel();
-        btn_openFile = new JButton("開啟檔案");
-        btn_openCam = new JButton("open Cam");
-        btn_reconiz = new JButton("辨識");
-        dlg_openFile = new JFileChooser();
-        panel_ctrl = new JPanel();
-        s_numOfPeople = new JComboBox(str);
-        btn_openFile.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-               int option = dlg_openFile.showDialog(null,null);
-                if(option == JFileChooser.APPROVE_OPTION){
-                    //System.out.print(dlg_openFile.getSelectedFile());
-                    Mat image= Highgui.imread(dlg_openFile.getSelectedFile().toString());
-                    findFace(image);
-                }
-            }
-        });
-        btn_openCam.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(b_camIsOpen){
-
-                    stopCamera();
-
-                }
-                else{
-                    startCamera();
-                }
-
-            }
-        });
-        s_numOfPeople.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                n_targetFace = s_numOfPeople.getSelectedIndex() +1 ;
-            }
-        });
-        panel_ctrl.add(btn_openCam);
-        //panel_ctrl.add(btn_openFile);
-        panel_ctrl.add(label_num_text);
-        panel_ctrl.add(s_numOfPeople);
-
-        add(panel_ctrl, BorderLayout.NORTH);
-        add(label_image, BorderLayout.SOUTH);
-    }
-
     public Image toBufferedImage(Mat m){
         int type = BufferedImage.TYPE_BYTE_GRAY;
         if ( m.channels() > 1 ) {
@@ -155,7 +228,7 @@ public class faceDetectFrame extends JFrame{
                     cam.retrieve(frame);
                     if(frame.rows()>0 && frame.cols()>0)
                         findFace(frame);
-                   // System.out.print(frame.rows()+"||"+frame.cols());
+                    // System.out.print(frame.rows()+"||"+frame.cols());
 
                 }
             }
@@ -165,20 +238,23 @@ public class faceDetectFrame extends JFrame{
     public void stopCamera(){
         t_capture.stop();
         cam.release();
-        btn_openCam.setText("開啟攝影機");
-        b_camIsOpen=!b_camIsOpen;
-
+        toogleCameraCtrMenuItem(false);
     }
     public void startCamera(){
         try{
             cam = new VideoCapture();
             cam.open(cameraNumber);
-            b_camIsOpen = !b_camIsOpen;
-            btn_openCam.setText("關閉攝影機");
+            toogleCameraCtrMenuItem(true);
             cameraCapture();
         }catch (Exception error){
             System.out.print(error.toString());
         }
 
+    }
+
+    private void toogleCameraCtrMenuItem(boolean cameraOpen){
+        mu_item_start.setEnabled(!cameraOpen);
+        mu_item_stop.setEnabled(cameraOpen);
+        label_image.setVisible(cameraOpen);
     }
 }
