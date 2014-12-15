@@ -38,7 +38,7 @@ public class faceDetectFrame extends JFrame{
     private JLabel label_explain;
     private JPanel panel_ctrl;
     private CascadeClassifier faceDetector;
-    private int n_targetFace=99;
+    private int n_targetFace=3;
     private JMenuBar bar_main;
     private JMenu menu_Camera;
     private JMenu menu_Help;
@@ -166,7 +166,18 @@ public class faceDetectFrame extends JFrame{
         rad_btn_num_4.addActionListener(actLten_rad_num_of_pepple);
         rad_btn_num_5.addActionListener(actLten_rad_num_of_pepple);
         rad_btn_num_6.addActionListener(actLten_rad_num_of_pepple);
-
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (JOptionPane.showConfirmDialog(pointer,
+                        "Are you sure to Exit", "Really Exit?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+                    if(cam.isOpened()) cam.release();
+                    System.exit(0);
+                }
+            }
+        });
 
     }
     public void findFace(Mat image){
@@ -191,7 +202,8 @@ public class faceDetectFrame extends JFrame{
 
         if(faceDetections.toArray().length > 0){
             for (Rect rect : faceDetections.toArray()) {
-                Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), color_rect);
+                Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), color_rect,2);
+
             }
         }
         setSize(image.cols(), image.rows() + bar_main.getHeight());
@@ -239,9 +251,15 @@ public class faceDetectFrame extends JFrame{
     public void startCamera(){
         try{
             cam = new VideoCapture();
-            cam.open(cameraNumber);
-            toogleCameraCtrMenuItem(true);
-            cameraCapture();
+
+            if(!cam.open(cameraNumber))
+                JOptionPane.showMessageDialog(pointer,"please check your camera status!","open camera Error",JOptionPane.ERROR_MESSAGE);
+            else
+            {
+                toogleCameraCtrMenuItem(true);
+                cameraCapture();
+            }
+
         }catch (Exception error){
             System.out.print(error.toString());
         }
