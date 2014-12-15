@@ -174,6 +174,7 @@ public class faceDetectFrame extends JFrame{
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
                     if(cam.isOpened()) cam.release();
+
                     System.exit(0);
                 }
             }
@@ -209,6 +210,7 @@ public class faceDetectFrame extends JFrame{
         setSize(image.cols(), image.rows() + bar_main.getHeight());
         ImageIcon icon = new ImageIcon(toBufferedImage(image));
         label_image.setIcon(icon);
+
     }
     public Image toBufferedImage(Mat m){
         int type = BufferedImage.TYPE_BYTE_GRAY;
