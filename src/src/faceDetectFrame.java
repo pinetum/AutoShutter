@@ -52,12 +52,15 @@ public class faceDetectFrame extends JFrame{
     private JRadioButtonMenuItem rad_btn_num_6;
     private ButtonGroup rad_group;
 
-    //****************************//
+
+    public faceDetectFrame(){
+        super("face");
+        pointer = this;
+        inital();
+        addListener();
 
 
-
-    //****************************//
-
+    }
 
 
     public static void main (String[] argc){
@@ -68,14 +71,7 @@ public class faceDetectFrame extends JFrame{
 
 
 
-    public faceDetectFrame(){
-        super("face");
-        pointer = this;
-        inital();
-        addListener();
 
-
-    }
     private void inital(){
         setSize(600, 400);
         setLocationRelativeTo(null);
