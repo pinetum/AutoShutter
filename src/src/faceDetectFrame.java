@@ -6,6 +6,7 @@ import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.objdetect.CascadeClassifier;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,6 +15,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.File;
 import java.util.Date;
 
 /**
@@ -112,12 +114,17 @@ public class faceDetectFrame extends JFrame{
         toogleCameraCtrMenuItem(false);
 
 
-        menu_Help.add(mu_item_about);
         menu_Camera.add(mu_item_start);
         menu_Camera.add(mu_item_stop);
         menu_Camera.add(menu_numOfPeople);
         bar_main.add(menu_Camera);
-        bar_main.add(menu_Help);
+
+       // menu_Help.add(mu_item_about);
+
+       // bar_main.add(menu_Help);
+
+
+        bar_main.add(mu_item_about);
 
 
 
@@ -166,6 +173,7 @@ public class faceDetectFrame extends JFrame{
         rad_btn_num_4.addActionListener(actLten_rad_num_of_pepple);
         rad_btn_num_5.addActionListener(actLten_rad_num_of_pepple);
         rad_btn_num_6.addActionListener(actLten_rad_num_of_pepple);
+        /*
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
@@ -179,7 +187,7 @@ public class faceDetectFrame extends JFrame{
                 }
             }
         });
-
+*/
     }
     public void findFace(Mat image){
         Scalar color_rect = new Scalar(0, 255, 0);
@@ -193,9 +201,15 @@ public class faceDetectFrame extends JFrame{
             color_rect = new Scalar(0,0,255);
 
             try{
-                //Highgui.imwrite("IMG_"+now.toString(),image);
-
-                //ImageIO.write(toBufferedImage(image), "jpg",new File("IMG_"+now.toString()+".jpg"));
+                //Highgui.imwrite("c:\\IMG_"+now.toString(),image);
+                Image aa = toBufferedImage(image);
+                BufferedImage bimage = new BufferedImage(aa.getWidth(null), aa.getHeight(null), BufferedImage.TYPE_3BYTE_BGR);
+                Graphics bg = bimage.getGraphics();
+                bg.drawImage(aa, 0, 0, null);
+                bg.dispose();
+                //ImageIO.write(bimage, "jpg", new File("IMG_" + now.toString() + ".jpg"));
+                ImageIO.write(bimage, "JPEG", new File("IMG_"+now.getYear()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+".jpg"));
+               // stopCamera();
             }catch (Exception e){System.out.print("write image file error:" + e.toString());}
             System.out.println(String.format("write photo!"));
             //stopCamera();
