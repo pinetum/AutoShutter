@@ -1,5 +1,6 @@
 package src;
 
+import com.sun.media.jfxmedia.MediaManager;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.highgui.Highgui;
@@ -7,7 +8,12 @@ import org.opencv.highgui.VideoCapture;
 import org.opencv.objdetect.CascadeClassifier;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
+import java.applet.Applet;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +22,8 @@ import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
 import java.util.Date;
 
 /**
@@ -29,16 +37,20 @@ public class faceDetectFrame extends JFrame{
             "<span style=\"color: #FF0000;\">Camera</span>中的<span style=\"color: #FF0000;\">peoples</span>設定拍照人數<br>" +
             "2.再點選<span style=\"color: #FF0000;\">Start Capture</span>開始自動判斷人數拍照</body></html>";
 
-
-
+    final int define_TimeCounter = 80;
+    final boolean bool_debug = true;
     //****************************//
+
+    private AudioClip aalip;
 
     public static faceDetectFrame pointer;
     private VideoCapture cam;
     private Thread t_capture;
     private JLabel label_image;
     private JLabel label_explain;
+
     private JPanel panel_ctrl;
+
     private CascadeClassifier faceDetector;
     private int n_targetFace=3;
     private JMenuBar bar_main;
@@ -53,8 +65,8 @@ public class faceDetectFrame extends JFrame{
     private JRadioButtonMenuItem rad_btn_num_5;
     private JRadioButtonMenuItem rad_btn_num_6;
     private ButtonGroup rad_group;
-
-
+    private boolean m_b_finFace = false;
+    private int m_nFrameTimeCounter = define_TimeCounter;
     public faceDetectFrame(){
         super("face");
         pointer = this;
@@ -69,6 +81,8 @@ public class faceDetectFrame extends JFrame{
         faceDetectFrame app = new faceDetectFrame();
         app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         app.setVisible(true);
+
+
     }
 
 
@@ -130,7 +144,7 @@ public class faceDetectFrame extends JFrame{
 
         label_explain.setText(str_explan);
         add(bar_main,BorderLayout.NORTH);
-        add(panel_ctrl, BorderLayout.EAST);
+        add(panel_ctrl, BorderLayout.WEST);
         add(label_explain,BorderLayout.CENTER);
         add(label_image, BorderLayout.SOUTH);
 
@@ -192,36 +206,88 @@ public class faceDetectFrame extends JFrame{
     public void findFace(Mat image){
         Scalar color_rect = new Scalar(0, 255, 0);
         MatOfRect faceDetections = new MatOfRect();
-        faceDetector.detectMultiScale(image, faceDetections);
-        int faces = faceDetections.toArray().length;
+        if(!m_b_finFace){
+            faceDetector.detectMultiScale(image, faceDetections);
+            int faces = faceDetections.toArray().length;
 
-        if(n_targetFace == faces){
-            Date now = new Date();
-            System.out.println(String.format("Detected %s faces", faces));
+            if( faces == n_targetFace || bool_debug )
+                m_b_finFace =true;
+
             color_rect = new Scalar(0,0,255);
+            if(faceDetections.toArray().length > 0){
+                for (Rect rect : faceDetections.toArray()) {
+                    Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), color_rect,2);
 
-            try{
-                //Highgui.imwrite("c:\\IMG_"+now.toString(),image);
-                Image aa = toBufferedImage(image);
-                BufferedImage bimage = new BufferedImage(aa.getWidth(null), aa.getHeight(null), BufferedImage.TYPE_3BYTE_BGR);
-                Graphics bg = bimage.getGraphics();
-                bg.drawImage(aa, 0, 0, null);
-                bg.dispose();
-                //ImageIO.write(bimage, "jpg", new File("IMG_" + now.toString() + ".jpg"));
-                ImageIO.write(bimage, "JPEG", new File("IMG_"+now.getYear()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+".jpg"));
-               // stopCamera();
-            }catch (Exception e){System.out.print("write image file error:" + e.toString());}
-            System.out.println(String.format("write photo!"));
-            //stopCamera();
+                }
+            }
+
         }
+        else{
+            m_nFrameTimeCounter--;
 
-        if(faceDetections.toArray().length > 0){
-            for (Rect rect : faceDetections.toArray()) {
-                Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), color_rect,2);
+            if(m_nFrameTimeCounter==0){
+                m_nFrameTimeCounter = define_TimeCounter;
+                m_b_finFace = false;
+
+                Date now = new Date();
+                try{
+                    //Highgui.imwrite("c:\\IMG_"+now.toString(),image);
+                    try{
+                        File mscFile = new File("CAMERALENS.wav");
+                        aalip = Applet.newAudioClip(mscFile.toURI().toURL());
+                        aalip.play();
+                    }
+                    catch (Exception e){
+                        System.out.println(e.toString());
+                    }
+                    Image aa = toBufferedImage(image);
+                    BufferedImage bimage = new BufferedImage(aa.getWidth(null), aa.getHeight(null), BufferedImage.TYPE_3BYTE_BGR);
+                    Graphics bg = bimage.getGraphics();
+                    bg.drawImage(aa, 0, 0, null);
+                    bg.dispose();
+                    //ImageIO.write(bimage, "jpg", new File("IMG_" + now.toString() + ".jpg"));
+                    ImageIO.write(bimage, "JPEG", new File("IMG_"+now.getYear()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+".jpg"));
+                    toogleCameraCtrMenuItem(false);
+                    label_image.setVisible(true);
+                    cam.release();
+
+
+                }catch (Exception e){System.out.print("write image file error:" + e.toString());}
 
             }
+            else{
+                int  textn= m_nFrameTimeCounter/20;
+
+
+                try{
+                    if(m_nFrameTimeCounter % 20 ==0){
+                        File mscFile = new File("radarping.wav");
+                        aalip = Applet.newAudioClip(mscFile.toURI().toURL());
+                        aalip.play();
+
+                    }
+
+                }
+                catch (Exception e){
+                    System.out.println(e.toString());
+                }
+
+
+                //System.out.println(textn);
+
+
+
+
+
+
+
+
+
+            }
+
         }
-        setSize(image.cols(), image.rows() + bar_main.getHeight());
+
+        setSize(image.cols() + 200, image.rows() + bar_main.getHeight());
         ImageIcon icon = new ImageIcon(toBufferedImage(image));
         label_image.setIcon(icon);
 
