@@ -1,29 +1,20 @@
 package src;
 
-import com.sun.media.jfxmedia.MediaManager;
+
 import org.opencv.core.*;
 import org.opencv.core.Point;
-import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.objdetect.CascadeClassifier;
-
 import javax.imageio.ImageIO;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
-import java.net.URI;
-import java.net.URL;
 import java.util.Date;
 
 /**
@@ -37,8 +28,8 @@ public class faceDetectFrame extends JFrame{
             "<span style=\"color: #FF0000;\">Camera</span>中的<span style=\"color: #FF0000;\">peoples</span>設定拍照人數<br>" +
             "2.再點選<span style=\"color: #FF0000;\">Start Capture</span>開始自動判斷人數拍照</body></html>";
 
-    final int define_TimeCounter = 80;
-    final boolean bool_debug = true;
+    final int define_TimeCounter = 100;
+    final boolean bool_debug = false;
     //****************************//
 
     private AudioClip aalip;
@@ -89,64 +80,74 @@ public class faceDetectFrame extends JFrame{
 
 
     private void inital(){
-        setSize(600, 400);
-        setLocationRelativeTo(null);
-        System.loadLibrary("opencv_java249x64");
-        String[] str= {"1","2","3"};
-        faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
-        label_image = new JLabel();
-        label_explain = new JLabel();
-        panel_ctrl = new JPanel();
-        bar_main = new JMenuBar();
-        menu_Camera = new JMenu("Camera...");
-        menu_Help = new JMenu("Help");
-        menu_numOfPeople = new JMenu("peoples");
-        mu_item_about = new JMenuItem("About");
-        mu_item_start = new JMenuItem("Start Capture");
-        mu_item_stop = new JMenuItem("Stop Capture");
-        rad_btn_num_3 = new JRadioButtonMenuItem("3");
-        rad_btn_num_4 = new JRadioButtonMenuItem("4");
-        rad_btn_num_5 = new JRadioButtonMenuItem("5");
-        rad_btn_num_6 = new JRadioButtonMenuItem("6");
+
+        try{
+            setSize(600, 400);
+            setLocationRelativeTo(null);
+            System.loadLibrary("opencv_java249x64");
+            String[] str= {"1","2","3"};
+            faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
+            label_image = new JLabel();
+            label_explain = new JLabel();
+            panel_ctrl = new JPanel();
+            bar_main = new JMenuBar();
+            menu_Camera = new JMenu("Camera...");
+            menu_Help = new JMenu("Help");
+            menu_numOfPeople = new JMenu("peoples");
+            mu_item_about = new JMenuItem("About");
+            mu_item_start = new JMenuItem("Start Capture");
+            mu_item_stop = new JMenuItem("Stop Capture");
+            rad_btn_num_3 = new JRadioButtonMenuItem("3");
+            rad_btn_num_4 = new JRadioButtonMenuItem("4");
+            rad_btn_num_5 = new JRadioButtonMenuItem("5");
+            rad_btn_num_6 = new JRadioButtonMenuItem("6");
 
 
 
-        rad_group = new ButtonGroup();
-        rad_group.add(rad_btn_num_3);
-        rad_group.add(rad_btn_num_4);
-        rad_group.add(rad_btn_num_5);
-        rad_group.add(rad_btn_num_6);
+            rad_group = new ButtonGroup();
+            rad_group.add(rad_btn_num_3);
+            rad_group.add(rad_btn_num_4);
+            rad_group.add(rad_btn_num_5);
+            rad_group.add(rad_btn_num_6);
 
-        rad_btn_num_3.setSelected(true);
+            rad_btn_num_3.setSelected(true);
 
-        menu_numOfPeople.add(rad_btn_num_3);
-        menu_numOfPeople.add(rad_btn_num_4);
-        menu_numOfPeople.add(rad_btn_num_5);
-        menu_numOfPeople.add(rad_btn_num_6);
-
-
-        toogleCameraCtrMenuItem(false);
+            menu_numOfPeople.add(rad_btn_num_3);
+            menu_numOfPeople.add(rad_btn_num_4);
+            menu_numOfPeople.add(rad_btn_num_5);
+            menu_numOfPeople.add(rad_btn_num_6);
 
 
-        menu_Camera.add(mu_item_start);
-        menu_Camera.add(mu_item_stop);
-        menu_Camera.add(menu_numOfPeople);
-        bar_main.add(menu_Camera);
-
-       // menu_Help.add(mu_item_about);
-
-       // bar_main.add(menu_Help);
+            toogleCameraCtrMenuItem(false);
 
 
-        bar_main.add(mu_item_about);
+            menu_Camera.add(mu_item_start);
+            menu_Camera.add(mu_item_stop);
+            menu_Camera.add(menu_numOfPeople);
+            bar_main.add(menu_Camera);
+
+            // menu_Help.add(mu_item_about);
+
+            // bar_main.add(menu_Help);
+
+
+            bar_main.add(mu_item_about);
 
 
 
-        label_explain.setText(str_explan);
-        add(bar_main,BorderLayout.NORTH);
-        add(panel_ctrl, BorderLayout.WEST);
-        add(label_explain,BorderLayout.CENTER);
-        add(label_image, BorderLayout.SOUTH);
+            label_explain.setText(str_explan);
+            add(bar_main,BorderLayout.NORTH);
+            add(panel_ctrl, BorderLayout.WEST);
+            add(label_explain,BorderLayout.CENTER);
+            add(label_image, BorderLayout.SOUTH);
+
+        }catch (Exception e){
+
+            JOptionPane.showMessageDialog(pointer,e.toString(),"Error",JOptionPane.CLOSED_OPTION);
+
+
+        }
+
 
     }
     private void addListener(){
@@ -187,21 +188,7 @@ public class faceDetectFrame extends JFrame{
         rad_btn_num_4.addActionListener(actLten_rad_num_of_pepple);
         rad_btn_num_5.addActionListener(actLten_rad_num_of_pepple);
         rad_btn_num_6.addActionListener(actLten_rad_num_of_pepple);
-        /*
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (JOptionPane.showConfirmDialog(pointer,
-                        "Are you sure to Exit", "Really Exit?",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
-                    if(cam.isOpened()) cam.release();
 
-                    System.exit(0);
-                }
-            }
-        });
-*/
     }
     public void findFace(Mat image){
         Scalar color_rect = new Scalar(0, 255, 0);
@@ -252,7 +239,10 @@ public class faceDetectFrame extends JFrame{
                     cam.release();
 
 
-                }catch (Exception e){System.out.print("write image file error:" + e.toString());}
+                }catch (Exception e){
+                    JOptionPane.showMessageDialog(pointer,e.toString(),"Write File Error",JOptionPane.CLOSED_OPTION);
+
+                }
 
             }
             else{
@@ -269,7 +259,8 @@ public class faceDetectFrame extends JFrame{
 
                 }
                 catch (Exception e){
-                    System.out.println(e.toString());
+                    JOptionPane.showMessageDialog(pointer,e.toString(),"play audio File Error",JOptionPane.CLOSED_OPTION);
+
                 }
 
 
