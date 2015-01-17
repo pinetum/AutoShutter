@@ -32,39 +32,37 @@ public class faceDetectFrame extends JFrame{
     final boolean bool_debug = false;
     //****************************//
 
-    private AudioClip aalip;
-
-    public static faceDetectFrame pointer;
-    private VideoCapture cam;
-    private Thread t_capture;
-    private JLabel label_image;
-    private JLabel label_explain;
-
-    private JPanel panel_ctrl;
-
-    private CascadeClassifier faceDetector;
-    private int n_targetFace=3;
-    private JMenuBar bar_main;
-    private JMenu menu_Camera;
-    private JMenu menu_Help;
-    private JMenu menu_numOfPeople;
-    private JMenuItem mu_item_about;
-    private JMenuItem mu_item_start;
-    private JMenuItem mu_item_stop;
-    private JRadioButtonMenuItem rad_btn_num_3;
-    private JRadioButtonMenuItem rad_btn_num_4;
-    private JRadioButtonMenuItem rad_btn_num_5;
-    private JRadioButtonMenuItem rad_btn_num_6;
-    private ButtonGroup rad_group;
-    private boolean m_b_finFace = false;
-    private int m_nFrameTimeCounter = define_TimeCounter;
+    private AudioClip               aalip;
+    public static faceDetectFrame   pointer;
+    private VideoCapture            cam;
+    private Thread                  t_capture;
+    private JLabel                  label_image;
+    private JLabel                  label_explain;
+    private JPanel                  panel_ctrl;
+    private CascadeClassifier       faceDetector;
+    private int                     n_targetFace=3;
+    private JMenuBar                bar_main;
+    private JMenu                   menu_Camera;
+    private JMenu                   menu_Help;
+    private JMenu                   menu_numOfPeople;
+    private JMenuItem               mu_item_about;
+    private JMenuItem               mu_item_start;
+    private JMenuItem               mu_item_stop;
+    private JRadioButtonMenuItem    rad_btn_num_3;
+    private JRadioButtonMenuItem    rad_btn_num_4;
+    private JRadioButtonMenuItem    rad_btn_num_5;
+    private JRadioButtonMenuItem    rad_btn_num_6;
+    private ButtonGroup             rad_group;
+    private boolean                 m_b_finFace         = false;
+    private int                     m_nFrameTimeCounter = define_TimeCounter;
     public faceDetectFrame(){
         super("face");
         pointer = this;
+        // intial member variable
         inital();
+        // inital many input listener
+
         addListener();
-
-
     }
 
 
@@ -84,27 +82,33 @@ public class faceDetectFrame extends JFrame{
         try{
             setSize(600, 400);
             setLocationRelativeTo(null);
-            System.loadLibrary("opencv_java249x64");
-            String[] str= {"1","2","3"};
-            faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
-            label_image = new JLabel();
-            label_explain = new JLabel();
-            panel_ctrl = new JPanel();
-            bar_main = new JMenuBar();
-            menu_Camera = new JMenu("Camera...");
-            menu_Help = new JMenu("Help");
-            menu_numOfPeople = new JMenu("peoples");
-            mu_item_about = new JMenuItem("About");
-            mu_item_start = new JMenuItem("Start Capture");
-            mu_item_stop = new JMenuItem("Stop Capture");
-            rad_btn_num_3 = new JRadioButtonMenuItem("3");
-            rad_btn_num_4 = new JRadioButtonMenuItem("4");
-            rad_btn_num_5 = new JRadioButtonMenuItem("5");
-            rad_btn_num_6 = new JRadioButtonMenuItem("6");
+
+            //get the system jdk bit to load library
+            String jdkBit = System.getProperty("sun.arch.data.model");
+            if(jdkBit.equals("64"))
+                System.loadLibrary("opencv_java249x64");
+            else
+                System.loadLibrary("opencv_java249x86");
 
 
 
-            rad_group = new ButtonGroup();
+            faceDetector =      new CascadeClassifier("lbpcascade_frontalface.xml");//getClass().getResource("/lbpcascade_frontalface.xml").getPath());
+            label_image =       new JLabel();
+            label_explain =     new JLabel();
+            panel_ctrl =        new JPanel();
+            bar_main =          new JMenuBar();
+            menu_Camera =       new JMenu("Camera...");
+            menu_Help =         new JMenu("Help");
+            menu_numOfPeople =  new JMenu("peoples");
+            mu_item_about =     new JMenuItem("About");
+            mu_item_start =     new JMenuItem("Start Capture");
+            mu_item_stop =      new JMenuItem("Stop Capture");
+            rad_btn_num_3 =     new JRadioButtonMenuItem("3");
+            rad_btn_num_4 =     new JRadioButtonMenuItem("4");
+            rad_btn_num_5 =     new JRadioButtonMenuItem("5");
+            rad_btn_num_6 =     new JRadioButtonMenuItem("6");
+            rad_group =         new ButtonGroup();
+
             rad_group.add(rad_btn_num_3);
             rad_group.add(rad_btn_num_4);
             rad_group.add(rad_btn_num_5);
@@ -246,7 +250,6 @@ public class faceDetectFrame extends JFrame{
 
             }
             else{
-                int  textn= m_nFrameTimeCounter/20;
 
 
                 try{
